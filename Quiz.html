@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teen Trivia</title>
+
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #020617;
+    color: white;
+    text-align: center;
+    padding: 20px;
+  }
+  .card {
+    background: #0f172a;
+    border-radius: 18px;
+    padding: 20px;
+    max-width: 420px;
+    margin: auto;
+  }
+  button {
+    width: 100%;
+    padding: 16px;
+    margin-top: 10px;
+    font-size: 18px;
+    border-radius: 14px;
+    border: none;
+    background: #38bdf8;
+    color: black;
+  }
+  button.correct { background: #4ade80; }
+  button.wrong { background: #f87171; }
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2 id="question">Loading question…</h2>
+  <div id="answers"></div>
+  <p id="score">Score: 0</p>
+</div>
+
+<script>
+let score = 0;
+
+async function loadQuestion() {
+  const res = await fetch(
+    "https://opentdb.com/api.php?amount=1&difficulty=easy&type=multiple"
+  );
+  const data = await res.json();
+  const q = data.results[0];
+
+  const question = decodeHTML(q.question);
+  const correct = decodeHTML(q.correct_answer);
+  const answers = [...q.incorrect_answers, q.correct_answer]
+    .map(a => decodeHTML(a))
+    .sort(() => Math.random() - 0.5);
+
+  document.getElementById("question").innerText = question;
+
+  const answersDiv = document.getElementById("answers");
+  answersDiv.innerHTML = "";
+
+  answers.forEach(answer => {
+    const btn = document.createElement("button");
+    btn.innerText = answer;
+    btn.onclick = () => {
+      if (answer === correct) {
+        btn.classList.add("correct");
+        score++;
+      } else {
+        btn.classList.add("wrong");
+      }
+      document.getElementById("score").innerText = `Score: ${score}`;
+      setTimeout(loadQuestion, 900);
+    };
+    answersDiv.appendChild(btn);
+  });
+}
+
+function decodeHTML(html) {
+  const txt = document.createElement("textarea");
+  txt.innerHTML = html;
+  return txt.value;
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
